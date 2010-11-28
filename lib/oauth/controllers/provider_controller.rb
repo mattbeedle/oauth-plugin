@@ -151,7 +151,11 @@ module OAuth
       def oauth2_authorize_token
         @client_application = ClientApplication.find_by_key params[:client_id]
         if request.post?
-          @redirect_url = URI.parse(params[:redirect_url] || @client_application.callback_url)
+          unless params[:redirect_url].blank?
+            @redirect_url = URI.parse(params[:redirect_url])
+          else
+            @redirect_url = URI.parse(@client_application.callback_url)
+          end
           if user_authorizes_token?
             @token  = Oauth2Token.create :client_application=>@client_application, :user=>current_user, :scope=>params[:scope]
             unless @redirect_url.to_s.blank?
